@@ -184,6 +184,7 @@ public class AuthController {
     private final AuthService authService;
 
     // ✅ SIGNUP
+    @PreAuthorize("permitAll()")
     @PostMapping("/signup")
     public ResponseEntity<ApiResponseDTO<?>> signup(@RequestBody SignupRequest request) {
         ApiResponseDTO<?> response = authService.signup(request);
@@ -191,6 +192,7 @@ public class AuthController {
     }
 
     // ✅ LOGIN (JWT token set in ResponseCookie)
+    @PreAuthorize("permitAll()")
     @PostMapping("/login")
     public ResponseEntity<ApiResponseDTO<?>> login(@RequestBody LoginRequest request) {
         ApiResponseDTO<?> response = authService.login(request);
@@ -216,6 +218,7 @@ public class AuthController {
     }
 
     // ✅ LOGOUT (clear cookie)
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/logout")
     public ResponseEntity<ApiResponseDTO<?>> logout() {
         ResponseCookie deleteCookie = ResponseCookie.from("jwt", "")
@@ -275,7 +278,6 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
     }
-
 }
 
 
