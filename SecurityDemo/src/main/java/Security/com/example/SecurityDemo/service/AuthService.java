@@ -30,14 +30,13 @@ public class AuthService {
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole("CUSTOMER");
+        user.setRole("CUSTOMER"); // default role
 
         userRepository.save(user);
-
         return new ApiResponseDTO<>(true, "Signup successful!", null);
     }
 
-    // ✅ LOGIN
+    // ✅ LOGIN (Generate JWT with Role)
     public ApiResponseDTO<?> login(LoginRequest request) {
         Optional<User> optionalUser = userRepository.findByEmail(request.getEmail());
         if (optionalUser.isEmpty()) {
@@ -50,8 +49,8 @@ public class AuthService {
             return new ApiResponseDTO<>(false, "Invalid email or password!", null);
         }
 
-        // ✅ Generate JWT
-        String token = jwtUtil.generateToken(user.getEmail());
+        // ✅ Generate JWT with both email & role
+        String token = jwtUtil.generateToken(user.getEmail(), user.getRole());
         return new ApiResponseDTO<>(true, "Login successful!", token);
     }
 
@@ -144,7 +143,6 @@ public class AuthService {
 
     // ✅ HOME PAGE (PUBLIC)
     public HomeContentDTO getHomeContent() {
-        // Sirf business logic, controller try–catch handle karega
         return new HomeContentDTO(
                 "Welcome to Security Demo App",
                 "This is a demo homepage with hardcoded title and content using DTO structure."
