@@ -183,41 +183,37 @@ public class AuthController {
 
     private final AuthService authService;
 
-    // ✅ SIGNUP
+    // ✅ Anyone can signup
     @PreAuthorize("permitAll()")
     @PostMapping("/signup")
     public ResponseEntity<ApiResponseDTO<?>> signup(@RequestBody SignupRequest request) {
-        ApiResponseDTO<?> response = authService.signup(request);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(authService.signup(request));
     }
 
-    // ✅ LOGIN (JWT token set in ResponseCookie)
+    // ✅ Anyone can login
     @PreAuthorize("permitAll()")
     @PostMapping("/login")
     public ResponseEntity<ApiResponseDTO<?>> login(@RequestBody LoginRequest request) {
         ApiResponseDTO<?> response = authService.login(request);
-
         if (response.isStatus() && response.getData() != null) {
             String token = response.getData().toString();
 
-            // ✅ Build cookie using ResponseCookie
             ResponseCookie cookie = ResponseCookie.from("jwt", token)
                     .httpOnly(true)
-                    .secure(false) // set true in production (for HTTPS)
+                    .secure(false)
                     .path("/")
-                    .maxAge(60 * 60) // 1 hour
-                    .sameSite("Lax") // use "None" for HTTPS + cross-domain
+                    .maxAge(60 * 60)
+                    .sameSite("Lax")
                     .build();
 
             return ResponseEntity.ok()
                     .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                    .body(new ApiResponseDTO<>(true, "Login successful!", "JWT token set in cookie"));
+                    .body(new ApiResponseDTO<>(true, "Login successful!", "JWT set in cookie"));
         }
-
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
 
-    // ✅ LOGOUT (clear cookie)
+    // ✅ Logout — only logged-in users
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/logout")
     public ResponseEntity<ApiResponseDTO<?>> logout() {
@@ -234,51 +230,48 @@ public class AuthController {
                 .body(new ApiResponseDTO<>(true, "Logged out successfully!", null));
     }
 
-    // ✅ PROFILE (protected)
+    // ✅ Profile (any logged-in user)
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/profile")
     public ResponseEntity<ApiResponseDTO<?>> getProfile() {
-        ApiResponseDTO<?> response = authService.getProfile();
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(authService.getProfile());
     }
 
-    // ✅ CHANGE ROLE (CUSTOMER → SELLER)
+    // ✅ Change Role (authenticated user only)
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/change-role")
     public ResponseEntity<ApiResponseDTO<?>> changeUserRole(@RequestParam String newRole) {
-        ApiResponseDTO<?> response = authService.changeUserRole(newRole);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(authService.changeUserRole(newRole));
     }
 
-    // ✅ CUSTOMER HOME (only CUSTOMER)
+    // ✅ Customer Home (only CUSTOMER)
     @PreAuthorize("hasAuthority('CUSTOMER')")
     @GetMapping("/customer-home")
     public ResponseEntity<ApiResponseDTO<?>> getCustomerHome() {
-        ApiResponseDTO<?> response = authService.getCustomerHomeData();
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(authService.getCustomerHomeData());
     }
 
-    // ✅ SELLER HOME (only SELLER)
+    // ✅ Seller Home (only SELLER)
     @PreAuthorize("hasAuthority('SELLER')")
     @GetMapping("/seller-home")
     public ResponseEntity<ApiResponseDTO<?>> getSellerHome() {
-        ApiResponseDTO<?> response = authService.getSellerHomeData();
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(authService.getSellerHomeData());
     }
 
+    // ✅ Public Home (no login needed)
     @PreAuthorize("permitAll()")
     @GetMapping("/home")
     public ResponseEntity<ApiResponseDTO<?>> getHomeContent() {
         try {
             HomeContentDTO data = authService.getHomeContent();
-            ApiResponseDTO<HomeContentDTO> response = new ApiResponseDTO<>(true, "Home content fetched successfully!", data);
-            return ResponseEntity.ok().body(response);
+            return ResponseEntity.ok(new ApiResponseDTO<>(true, "Home content fetched!", data));
         } catch (Exception e) {
-            ApiResponseDTO<String> error = new ApiResponseDTO<>(false, "Failed to fetch home content!", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponseDTO<>(false, "Failed to fetch home content!", e.getMessage()));
         }
     }
 }
+
 
 
 
