@@ -35,7 +35,7 @@ public class AuthService {
         return userRepository.save(user);
     }
 
-    // ✅ LOGIN
+    // ✅ LOGIN → only authenticate + return JWT token
     public String login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new CustomException("Invalid email or password!", HttpStatus.UNAUTHORIZED.value()));
@@ -44,6 +44,7 @@ public class AuthService {
             throw new CustomException("Invalid email or password!", HttpStatus.UNAUTHORIZED.value());
         }
 
+        // ✅ Generate and return JWT
         return jwtUtil.generateToken(user.getEmail(), user.getRole());
     }
 
@@ -82,7 +83,7 @@ public class AuthService {
         userRepository.save(user);
     }
 
-    // ✅ CUSTOMER HOME (No role check here)
+    // ✅ CUSTOMER HOME
     public CustomerHomeDTO getCustomerHomeData() {
         User user = getCurrentUser();
 
@@ -92,7 +93,7 @@ public class AuthService {
         return dto;
     }
 
-    // ✅ SELLER HOME (No role check here)
+    // ✅ SELLER HOME
     public CustomerHomeDTO getSellerHomeData() {
         User user = getCurrentUser();
 
@@ -102,7 +103,7 @@ public class AuthService {
         return dto;
     }
 
-    // ✅ PUBLIC HOME PAGE
+    // ✅ PUBLIC HOME
     public HomeContentDTO getHomeContent() {
         return new HomeContentDTO(
                 "Welcome to Security Demo App",
@@ -110,6 +111,7 @@ public class AuthService {
         );
     }
 }
+
 
 
 
