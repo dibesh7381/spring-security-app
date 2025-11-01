@@ -1,10 +1,10 @@
-
 package Security.com.example.SecurityDemo.controller;
 
 import Security.com.example.SecurityDemo.dto.*;
+import Security.com.example.SecurityDemo.model.User;
 import Security.com.example.SecurityDemo.service.AuthService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.*;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,94 +16,77 @@ public class AuthController {
 
     private final AuthService authService;
 
-    // ✅ Anyone can signup
+    // ✅ SIGNUP
     @PreAuthorize("permitAll()")
     @PostMapping("/signup")
     public ResponseEntity<ApiResponseDTO<?>> signup(@RequestBody SignupRequest request) {
-        return ResponseEntity.ok(authService.signup(request));
+        User user = authService.signup(request);
+        ApiResponseDTO<?> response = new ApiResponseDTO<>(true, "Signup successful!", user);
+        return ResponseEntity.ok(response);
     }
 
-    // ✅ Anyone can login
+    // ✅ LOGIN
     @PreAuthorize("permitAll()")
     @PostMapping("/login")
     public ResponseEntity<ApiResponseDTO<?>> login(@RequestBody LoginRequest request) {
-        ApiResponseDTO<?> response = authService.login(request);
-        if (response.isStatus() && response.getData() != null) {
-            String token = response.getData().toString();
-
-            ResponseCookie cookie = ResponseCookie.from("jwt", token)
-                    .httpOnly(true)
-                    .secure(false)
-                    .path("/")
-                    .maxAge(60 * 60)
-                    .sameSite("Lax")
-                    .build();
-
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                    .body(new ApiResponseDTO<>(true, "Login successful!", "JWT set in cookie"));
-        }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        String token = authService.login(request);
+        ApiResponseDTO<?> response = new ApiResponseDTO<>(true, "Login successful!", token);
+        return ResponseEntity.ok(response);
     }
 
-    // ✅ Logout — only logged-in users
-    @PreAuthorize("isAuthenticated()")
-    @PostMapping("/logout")
-    public ResponseEntity<ApiResponseDTO<?>> logout() {
-        ResponseCookie deleteCookie = ResponseCookie.from("jwt", "")
-                .httpOnly(true)
-                .secure(false)
-                .path("/")
-                .maxAge(0)
-                .sameSite("Lax")
-                .build();
-
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
-                .body(new ApiResponseDTO<>(true, "Logged out successfully!", null));
-    }
-
-    // ✅ Profile (any logged-in user)
+    // ✅ PROFILE
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/profile")
     public ResponseEntity<ApiResponseDTO<?>> getProfile() {
-        return ResponseEntity.ok(authService.getProfile());
+        UserProfileDTO profile = authService.getProfile();
+        ApiResponseDTO<?> response = new ApiResponseDTO<>(true, "Profile fetched successfully!", profile);
+        return ResponseEntity.ok(response);
     }
 
-    // ✅ Change Role (authenticated user only)
+    // ✅ CHANGE ROLE
     @PreAuthorize("isAuthenticated()")
-    @PostMapping("/change-role")
-    public ResponseEntity<ApiResponseDTO<?>> changeUserRole(@RequestParam String newRole) {
-        return ResponseEntity.ok(authService.changeUserRole(newRole));
+    @PutMapping("/change-role")
+    public ResponseEntity<ApiResponseDTO<?>> changeRole(@RequestParam String newRole) {
+        authService.changeUserRole(newRole);
+        ApiResponseDTO<?> response = new ApiResponseDTO<>(true, "Role changed successfully to " + newRole, null);
+        return ResponseEntity.ok(response);
     }
 
-    // ✅ Customer Home (only CUSTOMER)
+    // ✅ CUSTOMER HOME
     @PreAuthorize("hasAuthority('CUSTOMER')")
     @GetMapping("/customer-home")
     public ResponseEntity<ApiResponseDTO<?>> getCustomerHome() {
-        return ResponseEntity.ok(authService.getCustomerHomeData());
+        CustomerHomeDTO dto = authService.getCustomerHomeData();
+        ApiResponseDTO<?> response = new ApiResponseDTO<>(true, "Customer home data fetched!", dto);
+        return ResponseEntity.ok(response);
     }
 
-    // ✅ Seller Home (only SELLER)
+    // ✅ SELLER HOME
     @PreAuthorize("hasAuthority('SELLER')")
     @GetMapping("/seller-home")
     public ResponseEntity<ApiResponseDTO<?>> getSellerHome() {
-        return ResponseEntity.ok(authService.getSellerHomeData());
+        CustomerHomeDTO dto = authService.getSellerHomeData();
+        ApiResponseDTO<?> response = new ApiResponseDTO<>(true, "Seller home data fetched!", dto);
+        return ResponseEntity.ok(response);
     }
 
-    // ✅ Public Home (no login needed)
+    // ✅ PUBLIC HOME
     @PreAuthorize("permitAll()")
     @GetMapping("/home")
-    public ResponseEntity<ApiResponseDTO<?>> getHomeContent() {
-        try {
-            HomeContentDTO data = authService.getHomeContent();
-            return ResponseEntity.ok(new ApiResponseDTO<>(true, "Home content fetched!", data));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponseDTO<>(false, "Failed to fetch home content!", e.getMessage()));
-        }
+    public ResponseEntity<ApiResponseDTO<?>> getHomePage() {
+        HomeContentDTO dto = authService.getHomeContent();
+        ApiResponseDTO<?> response = new ApiResponseDTO<>(true, "Home page fetched!", dto);
+        return ResponseEntity.ok(response);
     }
 }
+
+
+
+
+
+
+
+
 
 
 
