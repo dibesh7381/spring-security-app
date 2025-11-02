@@ -111,7 +111,7 @@ public class AuthService {
         );
     }
 
-    // ✅ PUBLIC HOME
+    // ✅ PUBLIC ABOUT
     public AboutContentDTO getAboutContent() {
         return new AboutContentDTO(
                 "This is the about page for this application",

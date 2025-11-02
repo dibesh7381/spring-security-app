@@ -111,7 +111,7 @@ public class AuthController {
         return ResponseEntity.ok().body(response);
     }
 
-    @PreAuthorize("permitAll()")
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/about")
     public ResponseEntity<ApiResponseDTO<?>> getAboutContent() {
         AboutContentDTO dto = authService.getAboutContent();
