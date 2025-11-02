@@ -46,7 +46,7 @@ export default function Navbar() {
     return () => window.removeEventListener("authChanged", checkAuth);
   }, []);
 
-  // ✅ Logout function
+  // ✅ Logout function (no alert now)
   const handleLogout = async () => {
     try {
       await fetch("http://localhost:8080/api/auth/logout", {
@@ -56,7 +56,6 @@ export default function Navbar() {
       setIsLoggedIn(false);
       setUserRole("");
       window.dispatchEvent(new Event("authChanged"));
-      alert("Logged out successfully!");
       navigate("/login");
       setMenuOpen(false);
     } catch (err) {
@@ -157,7 +156,6 @@ export default function Navbar() {
 
       {/* ✅ Desktop Menu */}
       <div className="hidden md:flex gap-4 items-center">
-        {/* ✅ Always visible Home */}
         <Link
           to="/"
           onClick={() => setMenuOpen(false)}
@@ -192,7 +190,6 @@ export default function Navbar() {
           </button>
         </div>
 
-        {/* ✅ Always visible Home link in mobile */}
         <Link
           to="/"
           onClick={() => setMenuOpen(false)}
@@ -216,6 +213,7 @@ export default function Navbar() {
     </nav>
   );
 }
+
 
 
 
