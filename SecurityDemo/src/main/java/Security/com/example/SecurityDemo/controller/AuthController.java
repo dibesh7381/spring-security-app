@@ -103,11 +103,19 @@ public class AuthController {
     }
 
     // ✅ PUBLIC HOME
-    @PreAuthorize("permitAll()")
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/home")
     public ResponseEntity<ApiResponseDTO<?>> getHomePage() {
         HomeContentDTO dto = authService.getHomeContent();
         ApiResponseDTO<?> response = new ApiResponseDTO<>(true, "Home page fetched!", dto);
+        return ResponseEntity.ok().body(response);
+    }
+
+    @PreAuthorize("permitAll()")
+    @GetMapping("/about")
+    public ResponseEntity<ApiResponseDTO<?>> getAboutContent() {
+        AboutContentDTO dto = authService.getAboutContent();
+        ApiResponseDTO<?> response = new ApiResponseDTO<>(true,"About page fetch sucessfully",dto);
         return ResponseEntity.ok().body(response);
     }
 }

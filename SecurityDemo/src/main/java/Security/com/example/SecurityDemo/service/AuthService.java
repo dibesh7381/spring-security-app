@@ -110,6 +110,14 @@ public class AuthService {
                 "This is a demo homepage with hardcoded title and content using DTO structure."
         );
     }
+
+    // ✅ PUBLIC HOME
+    public AboutContentDTO getAboutContent() {
+        return new AboutContentDTO(
+                "This is the about page for this application",
+                "This is a demo aboutpage with hardcoded title and content using DTO structure."
+        );
+    }
 }
 
 
